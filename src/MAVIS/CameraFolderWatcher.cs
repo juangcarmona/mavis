@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 namespace MAVIS;
 public class CameraFolderWatcher : FolderWatcher
 {
+    private readonly List<string> _knownFiles = new();
+
     public CameraFolderWatcher(ILogger logger) : base(logger)
     {
     }
@@ -10,13 +12,32 @@ public class CameraFolderWatcher : FolderWatcher
     public override void Watch(string folder, int timerInterval, Action<string> onCreatedAction = null,
         Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30)
     {
+        // Inicializar la lista de archivos conocidos con los archivos existentes
+        var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" };
+        var existingFiles = Directory.GetFiles(folder, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLower())).ToList();
+
+        _knownFiles.AddRange(existingFiles);
+
         base.Watch(folder, timerInterval, onCreatedAction, onDeletedAction, verbose, createdActionTriggerDelay);
     }
 
     protected override void PollFolder()
     {
-        base.PollFolder();
-        // Aquí podrías añadir lógica específica para manejar la detección de imágenes nuevas
+        var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" }; // Filtra solo imágenes
+
+        var currentFiles = Directory.GetFiles(_pathBeingMonitored, "*.*", SearchOption.TopDirectoryOnly)
+            .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLower())).ToList();
+
+        foreach (var file in currentFiles)
+        {
+            if (!_knownFiles.Contains(file))
+            {
+                _knownFiles.Add(file);
+                _onCreatedAction?.Invoke(file);
+                _logger.LogInformation($"New image detected and handled: {file}");
+            }
+        }
     }
 }
 

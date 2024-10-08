@@ -17,7 +17,7 @@ namespace MAVIS
 
             var connectionString = configuration["AzureBlobStorage:ConnectionString"];
             _containerName = configuration["AzureBlobStorage:ContainerName"];
-            _keyPrefix = configuration["AzureBlobStorage:KeyPrefix"];
+            _keyPrefix = configuration["AzureBlobStorage:MavisKey"];
 
             _blobServiceClient = new BlobServiceClient(connectionString);
         }

@@ -12,7 +12,7 @@ namespace MAVIS.Tests
         public void RootFolderWatcher_AddsCameraWatcher_WhenNewCameraFolderIsCreated()
         {
             // Arrange
-            var loggerMock = Substitute.For<ILogger>();
+            var loggerMock = Substitute.For<ILogger<RootFolderWatcher>>();
             var uploaderMock = Substitute.For<AzureBlobUploader>();
             var rootWatcher = new RootFolderWatcher(loggerMock, uploaderMock);
             var currentPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), RandomString(6));

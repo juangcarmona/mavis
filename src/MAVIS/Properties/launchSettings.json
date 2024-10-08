@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MAVIS": {
+      "commandName": "Project",
+      "commandLineArgs": "-r D:\\cameras"
+    }
+  }
+}
