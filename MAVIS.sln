@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BE7948CA-6881-46F0-A509-CD313C6E532C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAVIS", "src\MAVIS\MAVIS.csproj", "{F34F8A33-6A1F-43BB-8062-F134ED3F0CAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAVIS.Tests", "src\MAVIS.Tests\MAVIS.Tests.csproj", "{00F262F5-FF79-43E7-91F5-E5006E1EB29A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F34F8A33-6A1F-43BB-8062-F134ED3F0CAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F34F8A33-6A1F-43BB-8062-F134ED3F0CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F34F8A33-6A1F-43BB-8062-F134ED3F0CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F34F8A33-6A1F-43BB-8062-F134ED3F0CAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00F262F5-FF79-43E7-91F5-E5006E1EB29A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00F262F5-FF79-43E7-91F5-E5006E1EB29A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00F262F5-FF79-43E7-91F5-E5006E1EB29A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00F262F5-FF79-43E7-91F5-E5006E1EB29A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F34F8A33-6A1F-43BB-8062-F134ED3F0CAF} = {BE7948CA-6881-46F0-A509-CD313C6E532C}
+		{00F262F5-FF79-43E7-91F5-E5006E1EB29A} = {BE7948CA-6881-46F0-A509-CD313C6E532C}
+	EndGlobalSection
+EndGlobal
