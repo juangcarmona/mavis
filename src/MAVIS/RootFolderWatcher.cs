@@ -41,7 +41,8 @@ public class RootFolderWatcher : FolderWatcher
     private void HandleNewImage(string imagePath)
     {
         _logger.LogInformation($"New image detected: {imagePath}");
-        _uploader.UploadFileAsync(imagePath, Path.GetFileName(imagePath)).Wait();
+        var cameraName = new DirectoryInfo(Path.GetDirectoryName(imagePath)).Name;
+        _uploader.UploadFileAsync(imagePath, Path.GetFileName(imagePath), cameraName).Wait();
         _logger.LogInformation($"Uploaded image: {imagePath}");
     }
 

@@ -8,7 +8,7 @@ namespace MAVIS
     {
         static async Task Main(string[] args)
         {
-            if (args.Length < 1)
+            if (args.Length < 2)
             {
                 Console.WriteLine("Usage: mavis -r <root_folder_path>");
                 return;
@@ -61,9 +61,27 @@ namespace MAVIS
             // Watch the specified root folder
             rootWatcher.Watch(rootFolderPath, 1000, async (path) =>
             {
+                // Calculate the relative path and determine if the file belongs to a camera
                 var relativePath = Path.GetRelativePath(rootFolderPath, path);
-                await uploader.UploadFileAsync(path, relativePath);
-            }, verbose: true);
+
+                // Determine camera name (if any)
+                var directoryName = Path.GetDirectoryName(path);
+                var cameraName = string.IsNullOrEmpty(directoryName) || directoryName == rootFolderPath
+                    ? null
+                    : new DirectoryInfo(directoryName).Name;
+
+                // Upload the file, including the camera name if it exists
+                if (string.IsNullOrEmpty(cameraName))
+                {
+                    // File is in the root folder, doesn't belong to any camera
+                    await uploader.UploadFileAsync(path, relativePath, "root");
+                }
+                else
+                {
+                    // File belongs to a specific camera
+                    await uploader.UploadFileAsync(path, relativePath, cameraName);
+                }
+            }, verbose: false);
 
             Console.WriteLine("Monitoring root folder. Press Ctrl+C to exit.");
             await Task.Delay(Timeout.Infinite);

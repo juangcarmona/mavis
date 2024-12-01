@@ -22,22 +22,63 @@ namespace MAVIS
             _blobServiceClient = new BlobServiceClient(connectionString);
         }
 
-        public async Task UploadFileAsync(string filePath, string relativePath)
+        public async Task UploadFileAsync(string filePath, string relativePath, string cameraName)
         {
             try
             {
                 var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-                var blobClient = containerClient.GetBlobClient($"{_keyPrefix}/{relativePath}");
 
+                // Generate new file name based on timestamp
+                var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                var extension = Path.GetExtension(filePath).ToLower(); // Normalize extension to lowercase
+                var fileName = $"image_{timestamp}{extension}";
+
+                // Define the folder structure for the camera
+                var cameraFolder = $"{_keyPrefix}/{cameraName}";
+
+                // Upload the original file
+                var blobClient = containerClient.GetBlobClient($"{cameraFolder}/{fileName}");
                 await using var fileStream = File.OpenRead(filePath);
                 await blobClient.UploadAsync(fileStream, overwrite: true);
-
                 _logger.LogInformation($"File {filePath} uploaded to {blobClient.Uri}");
+
+                // Upload the file as the latest image for the camera
+                var latestBlobClient = containerClient.GetBlobClient($"{cameraFolder}/latest.jpeg");
+                fileStream.Position = 0; // Reset the stream position before reusing it
+                await latestBlobClient.UploadAsync(fileStream, overwrite: true);
+
+                // Determine MIME type and set HTTP headers
+                var mimeType = GetMimeType(extension);
+                await latestBlobClient.SetHttpHeadersAsync(new Azure.Storage.Blobs.Models.BlobHttpHeaders
+                {
+                    CacheControl = "no-store, no-cache, must-revalidate",
+                    ContentType = mimeType
+                });
+
+                _logger.LogInformation($"File {filePath} uploaded as {latestBlobClient.Uri} with MIME type: {mimeType}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error uploading file {filePath}");
             }
         }
+
+        private string GetMimeType(string extension)
+        {
+            var mimeTypes = new Dictionary<string, string>
+            {
+                { ".jpg", "image/jpeg" },
+                { ".jpeg", "image/jpeg" },
+                { ".png", "image/png" },
+                { ".gif", "image/gif" },
+                { ".bmp", "image/bmp" },
+                { ".webp", "image/webp" },
+                { ".tiff", "image/tiff" },
+                { ".svg", "image/svg+xml" }
+            };
+
+            return mimeTypes.TryGetValue(extension, out var mimeType) ? mimeType : "application/octet-stream";
+        }
+
     }
 }
