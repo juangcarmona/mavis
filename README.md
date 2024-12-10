@@ -47,7 +47,7 @@ Example `appsettings.json`:
 ### 3. Running the Application
 You can start MAVIS manually by running:
 ```sh
-dotnet MAVIS.dll -r "C:/path/to/cams"
+dotnet MAVIS.dll -r "C:/path/to/cams" -s "grabs"
 ```
 
 ---

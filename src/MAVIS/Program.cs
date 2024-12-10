@@ -10,17 +10,23 @@ namespace MAVIS
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Usage: mavis -r <root_folder_path>");
+                Console.WriteLine("Usage: mavis -r <root_folder_path> [-s <sub_folder]");
                 return;
             }
 
             var option = args[0];
             var rootFolderPath = args.Length > 1 ? args[1] : null;
+            var subFolderName = args.Length > 3 && args[2] == "-s" ? args[3] : null;
 
             if (option != "-r" || rootFolderPath == null)
             {
                 Console.WriteLine("Invalid option. Use -r to specify the root folder to monitor.");
                 return;
+            }
+
+            if (!string.IsNullOrEmpty(subFolderName))
+            {
+                Console.WriteLine($"Subfolder specified: {subFolderName}");
             }
 
             if (!Directory.Exists(rootFolderPath))
@@ -81,7 +87,7 @@ namespace MAVIS
                     // File belongs to a specific camera
                     await uploader.UploadFileAsync(path, relativePath, cameraName);
                 }
-            }, verbose: false);
+            }, verbose: false, subFolderName: subFolderName);
 
             Console.WriteLine("Monitoring root folder. Press Ctrl+C to exit.");
             await Task.Delay(Timeout.Infinite);

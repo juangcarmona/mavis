@@ -10,7 +10,8 @@ public class CameraFolderWatcher : FolderWatcher
     }
 
     public override void Watch(string folder, int timerInterval, Action<string> onCreatedAction = null,
-        Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30)
+        Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30,
+        string subFolderName = null)
     {
         // Inicializar la lista de archivos conocidos con los archivos existentes
         var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" };
@@ -24,7 +25,7 @@ public class CameraFolderWatcher : FolderWatcher
 
     protected override void PollFolder()
     {
-        var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" }; // Filtra solo imágenes
+        var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" }; // Filtra solo imï¿½genes
 
         var currentFiles = Directory.GetFiles(_pathBeingMonitored, "*.*", SearchOption.TopDirectoryOnly)
             .Where(file => supportedExtensions.Contains(Path.GetExtension(file).ToLower())).ToList();

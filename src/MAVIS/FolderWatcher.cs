@@ -21,7 +21,8 @@ public class FolderWatcher : IDisposable
     }
 
     public virtual void Watch(string folder, int timerInterval, Action<string> onCreatedAction = null,
-        Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30)
+        Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30,
+        string subFolderName = null)
     {
         _verbose = verbose;
         _pathBeingMonitored = folder;
