@@ -10,13 +10,15 @@ namespace MAVIS
         {
             if (args.Length < 2)
             {
-                Console.WriteLine("Usage: mavis -r <root_folder_path> [-s <sub_folder]");
+                Console.WriteLine("Usage: mavis -r <root_folder_path> [-s <sub_folder] [-h (optional, to save history)]");
                 return;
             }
 
             var option = args[0];
             var rootFolderPath = args.Length > 1 ? args[1] : null;
             var subFolderName = args.Length > 3 && args[2] == "-s" ? args[3] : null;
+            var saveHistory = args.Contains("-h"); // To Save history of the files uploaded
+
 
             if (option != "-r" || rootFolderPath == null)
             {
@@ -28,6 +30,8 @@ namespace MAVIS
             {
                 Console.WriteLine($"Subfolder specified: {subFolderName}");
             }
+
+            Console.WriteLine($"Save history: {saveHistory}");
 
             if (!Directory.Exists(rootFolderPath))
             {
@@ -49,12 +53,7 @@ namespace MAVIS
             var serviceProvider = new ServiceCollection()
                 .AddLogging(configure =>
                 {
-                    configure.AddSimpleConsole(options =>
-                    {
-                        options.SingleLine = true;
-                        options.TimestampFormat = "hh:mm:ss ";
-                        options.IncludeScopes = false;
-                    }).SetMinimumLevel(LogLevel.Information);
+                    configure.AddSimpleConsole();
                 })
                 .AddSingleton(configuration)
                 .AddSingleton<RootFolderWatcher>()
@@ -80,14 +79,15 @@ namespace MAVIS
                 if (string.IsNullOrEmpty(cameraName))
                 {
                     // File is in the root folder, doesn't belong to any camera
-                    await uploader.UploadFileAsync(path, relativePath, "root");
+                    await uploader.UploadFileAsync(path, relativePath, "root", saveHistory);
                 }
                 else
                 {
                     // File belongs to a specific camera
-                    await uploader.UploadFileAsync(path, relativePath, cameraName);
+                    await uploader.UploadFileAsync(path, relativePath, cameraName, saveHistory);
                 }
-            }, verbose: false, subFolderName: subFolderName);
+
+            }, verbose: false, subFolderName: subFolderName, saveHistory: saveHistory);
 
             Console.WriteLine("Monitoring root folder. Press Ctrl+C to exit.");
             await Task.Delay(Timeout.Infinite);

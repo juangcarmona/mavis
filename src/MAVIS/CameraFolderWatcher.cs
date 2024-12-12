@@ -11,7 +11,7 @@ public class CameraFolderWatcher : FolderWatcher
 
     public override void Watch(string folder, int timerInterval, Action<string> onCreatedAction = null,
         Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30,
-        string subFolderName = null)
+        string subFolderName = null, bool includeSubFolders = false)
     {
         // Inicializar la lista de archivos conocidos con los archivos existentes
         var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp" };

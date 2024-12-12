@@ -18,7 +18,7 @@ public class RootFolderWatcher : FolderWatcher
 
     public override void Watch(string folder, int timerInterval, Action<string> onCreatedAction = null,
         Action<string> onDeletedAction = null, bool verbose = false, int createdActionTriggerDelay = 30,
-        string subFolderName = null)
+        string subFolderName = null, bool saveHistory = false)
     {
         _subFolderName = subFolderName;
         base.Watch(folder, timerInterval, HandleNewCamera, HandleCameraFolderDeleted, verbose, createdActionTriggerDelay);

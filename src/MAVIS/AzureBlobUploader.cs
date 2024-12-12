@@ -22,7 +22,7 @@ namespace MAVIS
             _blobServiceClient = new BlobServiceClient(connectionString);
         }
 
-        public async Task UploadFileAsync(string filePath, string relativePath, string cameraName)
+        public async Task UploadFileAsync(string filePath, string relativePath, string cameraName, bool saveHistory = false)
         {
             try
             {
@@ -36,16 +36,22 @@ namespace MAVIS
                 // Define the folder structure for the camera
                 var cameraFolder = $"{_keyPrefix}/{cameraName}";
 
-                // Upload the original file
-                var blobClient = containerClient.GetBlobClient($"{cameraFolder}/{fileName}");
-                await using var fileStream = File.OpenRead(filePath);
-                await blobClient.UploadAsync(fileStream, overwrite: true);
-                _logger.LogInformation($"File {filePath} uploaded to {blobClient.Uri}");
+                if (saveHistory)
+                {
+
+                    // Upload the original file
+                    var blobClient = containerClient.GetBlobClient($"{cameraFolder}/{fileName}");
+                    await using var fileStream = File.OpenRead(filePath);
+                    await blobClient.UploadAsync(fileStream, overwrite: true);
+                    _logger.LogInformation($"File {filePath} uploaded to {blobClient.Uri}");
+                }
 
                 // Upload the file as the latest image for the camera
                 var latestBlobClient = containerClient.GetBlobClient($"{cameraFolder}/latest.jpeg");
-                fileStream.Position = 0; // Reset the stream position before reusing it
-                await latestBlobClient.UploadAsync(fileStream, overwrite: true);
+                await using (var fileStream = File.OpenRead(filePath)) // Ensure a fresh stream
+                {
+                    await latestBlobClient.UploadAsync(fileStream, overwrite: true);
+                }
 
                 // Determine MIME type and set HTTP headers
                 var mimeType = GetMimeType(extension);
