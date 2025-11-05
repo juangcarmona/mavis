@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MAVIS
 {
-    public class AzureBlobUploader
+    public class AzureBlobUploader : IImageUploader
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _containerName;
@@ -22,38 +22,29 @@ namespace MAVIS
             _blobServiceClient = new BlobServiceClient(connectionString);
         }
 
-        public async Task UploadFileAsync(string filePath, string relativePath, string cameraName, bool saveHistory = false)
+        public async Task UploadAsync(string filePath, string relativePath, string cameraName, bool saveHistory = false)
         {
             try
             {
                 var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
-                // Generate new file name based on timestamp
                 var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-                var extension = Path.GetExtension(filePath).ToLower(); // Normalize extension to lowercase
+                var extension = Path.GetExtension(filePath).ToLower();
                 var fileName = $"image_{timestamp}{extension}";
-
-                // Define the folder structure for the camera
                 var cameraFolder = $"{_keyPrefix}/{cameraName}";
 
                 if (saveHistory)
                 {
-
-                    // Upload the original file
                     var blobClient = containerClient.GetBlobClient($"{cameraFolder}/{fileName}");
                     await using var fileStream = File.OpenRead(filePath);
                     await blobClient.UploadAsync(fileStream, overwrite: true);
                     _logger.LogInformation($"File {filePath} uploaded to {blobClient.Uri}");
                 }
 
-                // Upload the file as the latest image for the camera
                 var latestBlobClient = containerClient.GetBlobClient($"{cameraFolder}/latest.jpeg");
-                await using (var fileStream = File.OpenRead(filePath)) // Ensure a fresh stream
-                {
+                await using (var fileStream = File.OpenRead(filePath))
                     await latestBlobClient.UploadAsync(fileStream, overwrite: true);
-                }
 
-                // Determine MIME type and set HTTP headers
                 var mimeType = GetMimeType(extension);
                 await latestBlobClient.SetHttpHeadersAsync(new Azure.Storage.Blobs.Models.BlobHttpHeaders
                 {
@@ -61,7 +52,7 @@ namespace MAVIS
                     ContentType = mimeType
                 });
 
-                _logger.LogInformation($"File {filePath} uploaded as {latestBlobClient.Uri} with MIME type: {mimeType}");
+                _logger.LogInformation($"File {filePath} uploaded as {latestBlobClient.Uri}");
             }
             catch (Exception ex)
             {

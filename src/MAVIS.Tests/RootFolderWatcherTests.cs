@@ -1,44 +1,46 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using System.Reflection;
 
-namespace MAVIS.Tests
+namespace MAVIS.Tests;
+
+public class RootFolderWatcherTests
 {
-    public class RootFolderWatcherTests
+    [Fact]
+    public async Task HandleNewImage_ShouldInvokeAllUploaders()
     {
-        private static Random _random = new Random();
+        var uploader1 = Substitute.For<IImageUploader>();
+        var uploader2 = Substitute.For<IImageUploader>();
+        var logger = NullLogger<RootFolderWatcher>.Instance;
 
-        [Fact]
-        public void RootFolderWatcher_AddsCameraWatcher_WhenNewCameraFolderIsCreated()
-        {
-            // Arrange
-            var loggerMock = Substitute.For<ILogger<RootFolderWatcher>>();
-            var uploaderMock = Substitute.For<AzureBlobUploader>();
-            var rootWatcher = new RootFolderWatcher(loggerMock, uploaderMock);
-            var currentPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), RandomString(6));
-            Directory.CreateDirectory(currentPath);
-            var timerInterval = 1000;
+        var uploaders = new[] { uploader1, uploader2 };
+        var watcher = new RootFolderWatcher(logger, uploaders);
 
-            rootWatcher.Watch(currentPath, timerInterval);
+        var tmpRoot = Path.Combine(Path.GetTempPath(), "mavis-test");
+        var camFolder = Path.Combine(tmpRoot, "cam1");
+        Directory.CreateDirectory(camFolder);
+        var testFile = Path.Combine(camFolder, "frame.jpg");
+        await File.WriteAllTextAsync(testFile, "fake");
 
-            Thread.Sleep(2000);
+        // initialize internal state
+        watcher.Watch(tmpRoot, 1000);
 
-            // Act
-            var newCameraPath = $"{currentPath}\\{RandomString(4)}";
-            Directory.CreateDirectory(newCameraPath);
-            Thread.Sleep(timerInterval + 2000);
+        // invoke private method
+        var method = typeof(RootFolderWatcher)
+            .GetMethod("HandleNewImage", BindingFlags.NonPublic | BindingFlags.Instance);
+        method!.Invoke(watcher, new object[] { testFile });
 
-            // Assert
-            Assert.Contains(newCameraPath, rootWatcher.CameraWatchers.Keys);
+        await uploader1.Received(1).UploadAsync(
+            Arg.Is<string>(p => p.EndsWith("frame.jpg")),
+            Arg.Any<string>(),
+            Arg.Is("cam1"),
+            Arg.Any<bool>());
 
-            Directory.Delete(newCameraPath, true);
-        }
-
-        public static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[_random.Next(s.Length)]).ToArray());
-        }
+        await uploader2.Received(1).UploadAsync(
+            Arg.Is<string>(p => p.EndsWith("frame.jpg")),
+            Arg.Any<string>(),
+            Arg.Is("cam1"),
+            Arg.Any<bool>());
     }
 }

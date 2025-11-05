@@ -5,13 +5,13 @@ namespace MAVIS;
 public class RootFolderWatcher : FolderWatcher
 {
     private readonly Dictionary<string, CameraFolderWatcher> _cameraWatchers = new();
-    private readonly AzureBlobUploader _uploader;
+    private readonly IEnumerable<IImageUploader> _uploaders;
     private string _subFolderName;
 
 
-    public RootFolderWatcher(ILogger<RootFolderWatcher> logger, AzureBlobUploader uploader) : base(logger)
+    public RootFolderWatcher(ILogger<RootFolderWatcher> logger, IEnumerable<IImageUploader> uploaders) : base(logger)
     {
-        _uploader = uploader;
+        _uploaders = uploaders;
     }
 
     public Dictionary<string, CameraFolderWatcher> CameraWatchers => _cameraWatchers;
@@ -62,8 +62,11 @@ public class RootFolderWatcher : FolderWatcher
 
         // Asume that first segment corresponds to camera name
         var cameraName = segments.Length > 1 ? segments[0] : "root";
+        foreach (var uploader in _uploaders)
+        {
+            uploader.UploadAsync(imagePath, Path.GetFileName(imagePath), cameraName).Wait();
+        }
 
-        _uploader.UploadFileAsync(imagePath, Path.GetFileName(imagePath), cameraName).Wait();
         _logger.LogInformation($"Uploaded image: {imagePath}");
     }
 

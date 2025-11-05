@@ -2,7 +2,10 @@
   "profiles": {
     "MAVIS": {
       "commandName": "Project",
-      "commandLineArgs": "-r D:\\cameras"
+      "commandLineArgs": "-r D:\\cameras",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
     }
   }
 }
