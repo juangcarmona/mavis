@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0;overflow:hidden">
+    <img id="cam" src="latest.jpg" style="width:100%">
+    <script>const img=document.getElementById("cam");
+setInterval(()=>img.src="latest.jpg?cb="+Date.now(),5000);</script>
+</body>
+</html>
