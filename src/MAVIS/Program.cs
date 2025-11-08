@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 
 namespace MAVIS
 {
@@ -68,6 +69,9 @@ namespace MAVIS
                         break;
                     case "sftp":
                         services.AddSingleton<IImageUploader, SftpUploader>();
+                        break;
+                    case "ftps":
+                        services.AddSingleton<IImageUploader, FtpsUploader>();
                         break;
                     default:
                         Console.WriteLine($"[WARN] Unknown uploader type: {type}");
